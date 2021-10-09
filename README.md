@@ -11,6 +11,7 @@
 [![NPM](https://nodei.co/npm/iobroker.esvewifi.png?downloads=true)](https://nodei.co/npm/iobroker.esvewifi/)
 
 ## evSewifi adapter for ioBroker
+## Forked from https://github.com/JFK344/ioBroker.evsewifi for my own testing and trial & error development 
 
 Transmitting data from an to the ESVE Wallbox.
 SimpleEVSE-WiFi: https://github.com/CurtRod/SimpleEVSE-WiFi
