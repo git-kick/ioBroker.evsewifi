@@ -33,8 +33,8 @@ class Evsewifi extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration.
      */
     async onReady() {
-        this.log.info('ESVE Wifi Adapter Started! Instance Number: ' + this.instance)
-        this.log.info('ESVE IP: ' + this.config.ip);
+        this.log.info('EVSE Wifi Adapter Started! Instance Number: ' + this.instance)
+        this.log.info('EVSE IP: ' + this.config.ip);
         this.log.info('Refresh Interval: ' + this.config.refreshInterval);
         this.subscribeStates('*');
         const self = this;
@@ -344,7 +344,7 @@ class Evsewifi extends utils.Adapter {
       request({method: "GET", url}, function (error, response, result) {
           if(!error && response.statusCode == 200){
             if(response.body == 'S0_EVSE-WiFi is going to reboot now...'){
-              self.log.info("Rebooted ESVE-Wifi Module")
+              self.log.info("Rebooted EVSE-Wifi Module")
             } else {
               self.log.info("Could not performe doReboot()")
             }
@@ -362,7 +362,7 @@ class Evsewifi extends utils.Adapter {
       request({method: "GET", url}, function (error, response, result) {
           if(!error && response.statusCode == 200){
             if(result == 'E2_could not process - wrong parameter or EVSE-WiFi runs in always active mode'){
-              self.log.info("ESVE Running in Always Active Mode");
+              self.log.info("EVSE Running in Always Active Mode");
             } else {
               self.log.info('Could not perform setStatus()')
             }
