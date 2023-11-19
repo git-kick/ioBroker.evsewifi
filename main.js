@@ -378,7 +378,6 @@ class Evsewifi extends utils.Adapter {
             }
           } else {
             self.log.debug("Check IP!")
-            //self.stop();
           }
       })
     }
@@ -388,15 +387,10 @@ class Evsewifi extends utils.Adapter {
       const self = this;
       request({method: "GET", url}, function (error, response, result) {
           if(!error && response.statusCode == 200){
-            if(result == 'E2_could not process - wrong parameter or EVSE-WiFi runs in always active mode'){
-              self.log.info("EVSE Running in Always Active Mode");
-            } else {
-              self.log.info('Could not perform setStatus()')
-            }
+            self.log.info(result);
           }
           else {
-            self.log.info("Check IP!")
-            //self.stop();
+            self.log.warn(`Status code ${response.StatusCode} - Check IP!`)
           }
       })
     }
