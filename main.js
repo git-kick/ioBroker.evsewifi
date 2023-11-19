@@ -386,12 +386,11 @@ class Evsewifi extends utils.Adapter {
       const url = 'http://' + this.config.ip + '/setStatus?active='+status;
       const self = this;
       request({method: "GET", url}, function (error, response, result) {
-          if(!error && response.statusCode == 200){
+        if(!error && response.statusCode == 200){
             self.log.info(result);
-          }
-          else {
+        } else {
             self.log.warn(`Status code ${response.StatusCode} - Check IP!`)
-          }
+        }
       })
     }
 
@@ -399,15 +398,11 @@ class Evsewifi extends utils.Adapter {
       const url = 'http://' + this.config.ip + '/setCurrent?current='+current;
       const self = this;
       request({method: "GET", url}, function (error, response, result) {
-          if(!error && response.statusCode == 200){
-            if(result == 'S0_set current to given value'){
-            } else {
-              self.log.info('Could not perform setCurrent()')
-            }
-          } else {
-            self.log.info("Check IP!")
-            //self.stop();
-          }
+        if(!error && response.statusCode == 200){
+            self.log.info(result);
+        } else {
+            self.log.warn(`Status code ${response.StatusCode} - Check IP!`)
+        }
       })
     }
 
@@ -416,16 +411,12 @@ class Evsewifi extends utils.Adapter {
         const self = this;
         request({method: "GET", url}, function (error, response, result) {
             if(!error && response.statusCode == 200){
-              if(result == 'S0_set current to given value'){
-              } else {
-                self.log.info("Could not perform interruptCp(): `result`")
-              }
+                self.log.info(result);
             } else {
-              self.log.info("Check IP!")
-              //self.stop();
+                self.log.warn(`Status code ${response.StatusCode} - Check IP!`)
             }
         })
-      }
+    }
   
     async getLog(){
       var logsFolderName = 'logs.'
