@@ -307,8 +307,8 @@ class Evsewifi extends utils.Adapter {
             type: 'state',
             common: {
                 name: 'setStatus',
-                type: 'string',
-                role: 'string',
+                type: 'boolean',
+                role: 'switch',
                 read: true,
                 write: true,
             },
@@ -355,15 +355,11 @@ class Evsewifi extends utils.Adapter {
             if(id == 'evsewifi.'+this.instance+'.setCurrent'){
               this.setCurrent(state.val);
             }
-            if(id == 'evsewifi.'+this.instance+'.interruptCp' && state.val == true){
+            if(id == 'evsewifi.'+this.instance+'.interruptCp'){
                 this.interruptCp(state.val?state.val:3000);
             }
             if(id == 'evsewifi.'+this.instance+'.setStatus'){
-              if(state.val == 'true' || state.val == 'false'){
                 this.setStatus(state.val);
-              } else {
-                this.log.debug('For "SetStatus" provide -> "true" or "false"')
-              }
             }
         } else {
             this.log.debug(`state ${id} deleted`);
