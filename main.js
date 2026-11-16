@@ -11,6 +11,14 @@ const utils = require('@iobroker/adapter-core');
 // Load your modules here, e.g.:
 // const fs = require("fs");
 let updateInterval = null;
+const logAttributes = ['uid', 'username', 'timestamp', 'duration', 'energy', 'price', 'reading', 'rEnd'];
+
+Number.prototype.pad = function(size) {
+    var s = String(this);
+    while (s.length < (size || 1)) {s = "0" + s;}
+    return s;
+}
+
 class Evsewifi extends utils.Adapter {
 
     /**
@@ -31,7 +39,7 @@ class Evsewifi extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration.
      */
     async onReady() {
-        this.log.info('EVSE Wifi Adapter Started! Instance Number: ' + this.instance);
+        this.log.info('EVSE Wifi Adapter Started! Instance Number: ' + this.instance)
         this.log.info('EVSE IP: ' + this.config.ip);
         this.log.info('Refresh Interval: ' + this.config.refreshInterval);
         this.subscribeStates('*');
@@ -244,18 +252,34 @@ class Evsewifi extends utils.Adapter {
             native: {},
         });
 
-        for(let c=0; c < this.config.noLogsToShow; c++){
-            await this.setObjectNotExistsAsync(logsFolderName+'Log_'+c, {
-                type: 'state',
-                common: {
-                    name: 'Log_'+c,
-                    type: 'string',
-                    role: 'string',
-                    read: true,
-                    write: false,
-                },
-                native: {},
-            });
+        for(var c=0; c < this.config.noLogsToShow; c++){
+            const cString = (c).pad(String(this.config.noLogsToShow-1).length);
+            for(const a of logAttributes.slice(0,2)) {
+                await this.setObjectNotExistsAsync(logsFolderName+'log_'+cString+'.'+a, {
+                    type: 'state',
+                    common: {
+                        name: a,
+                        type: 'string',
+                        role: 'string',
+                        read: true,
+                        write: false,
+                    },
+                    native: {},
+                });    
+            }
+            for(const a of logAttributes.slice(2)) {
+                await this.setObjectNotExistsAsync(logsFolderName+'log_'+cString+'.'+a, {
+                    type: 'state',
+                    common: {
+                        name: a,
+                        type: 'number',
+                        role: 'number',
+                        read: true,
+                        write: false,
+                    },
+                    native: {},
+                });    
+            }
         }
 
         await this.setObjectNotExistsAsync('setCurrent', {
@@ -270,12 +294,24 @@ class Evsewifi extends utils.Adapter {
             native: {},
         });
 
+        await this.setObjectNotExistsAsync('interruptCp', {
+            type: 'state',
+            common: {
+                name: 'interruptCp',
+                type: 'number',
+                role: 'number',
+                read: true,
+                write: true,
+            },
+            native: {},
+        });
+
         await this.setObjectNotExistsAsync('setStatus', {
             type: 'state',
             common: {
                 name: 'setStatus',
-                type: 'string',
-                role: 'string',
+                type: 'boolean',
+                role: 'switch',
                 read: true,
                 write: true,
             },
@@ -295,8 +331,6 @@ class Evsewifi extends utils.Adapter {
         });
     }
 
-
-
     /**
      * Is called when adapter shuts down - callback has to be called under any circumstances!
      * @param {() => void} callback
@@ -309,6 +343,7 @@ class Evsewifi extends utils.Adapter {
             callback();
         }
     }
+    
     /**
      * Is called if a subscribed state changes
      * @param {string} id
@@ -322,6 +357,9 @@ class Evsewifi extends utils.Adapter {
             }
             if(id == 'evsewifi.'+this.instance+'.setCurrent'){
                 this.setCurrent(state.val);
+            }
+            if(id == 'evsewifi.'+this.instance+'.interruptCp'){
+                this.interruptCp(state.val?state.val:3000);
             }
             if(id == 'evsewifi.'+this.instance+'.setStatus'){
                 if(state.val == 'true' || state.val == 'false'){
@@ -352,7 +390,6 @@ class Evsewifi extends utils.Adapter {
         });
     }
 
-
     async setStatus(status){
         const url = 'http://' + this.config.ip + '/setStatus?active='+status;
         const self = this;
@@ -371,43 +408,56 @@ class Evsewifi extends utils.Adapter {
         });
     }
 
-
     async setCurrent(current){
-        const url = 'http://' + this.config.ip + '/setCurrent?current='+current;
-        const self = this;
-        request({method: 'GET', url}, function (error, response, result) {
-            if(!error && response.statusCode == 200){
-                if(result !== 'S0_set current to given value'){
-                    self.log.warn('Could not perform setCurrent()');
-                }
-            } else {
-                self.log.warn('Check IP!');
-            //self.stop();
-            }
-        });
+      const url = 'http://' + this.config.ip + '/setCurrent?current='+current;
+      const self = this;
+      request({method: "GET", url}, function (error, response, result) {
+        if(!error && response.statusCode == 200){
+            self.log.info(result);
+        } else {
+            self.log.warn(`Status code ${response.StatusCode} - Check IP!`)
+        }
+      })
     }
 
-    //noLogsToShow
-    async getLog(){
-        const logsFolderName = 'logs.';
-        const url = 'http://' + this.config.ip + '/getLog';
+    async interruptCp(duration){
+        const url = 'http://' + this.config.ip + '/interruptCp?duration='+duration;
         const self = this;
-        if (this.config.noLogsToShow != 0){
-            request({method: 'GET', url}, function (error, response, result) {
-                if(!error && response.statusCode == 200){
-                    const logObj = JSON.parse(result);
-                    for(let c=0; c < logObj.list.length; c++){
-                        if(c < self.config.noLogsToShow){
-                            self.setState(logsFolderName+'Log_'+c, JSON.stringify(logObj.list[c]), true);
-                        }
-                    }
-                    self.log.debug('getLog returned: ' + result);
-                } else {
-                    self.log.warn('Check IP!');
-                    //self.stop();
+        request({method: "GET", url}, function (error, response, result) {
+            if(!error && response.statusCode == 200){
+                self.log.info(result);
+            } else {
+                self.log.warn(`Status code ${response.StatusCode} - Check IP!`)
+            }
+        })
+    }
+  
+    async getLog(){
+      var logsFolderName = 'logs.'
+      const url = 'http://' + this.config.ip + '/getLog';
+      const self = this;
+      if (this.config.noLogsToShow != 0){
+        request({method: "GET", url}, function (error, response, result) {
+            if(!error && response.statusCode == 200){
+              try {
+                  var logObj = JSON.parse(result)
+              } catch (e) {
+                  self.log.warn(`Failed to parse JSON '${result}'`)
+              }
+              const l = Object.keys(logObj.list).length;
+              for(let c=0; c < l && c < self.config.noLogsToShow; c++){
+                const cString = (c).pad(String(self.config.noLogsToShow-1).length);
+                for(const a of logAttributes) {
+                  self.setState(logsFolderName+'log_'+cString+'.'+a, logObj.list[l-1-c][a], true); // latest entry first
                 }
-            });
-        }
+              }
+              self.log.debug('getLog returned: ' + result)
+            } else {
+              self.log.error("Check IP!")
+              //self.stop();
+            }
+        })
+      }
     }
 
     async getParameters() {

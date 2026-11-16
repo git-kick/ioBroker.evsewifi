@@ -8,11 +8,11 @@
 [![Dependency Status](https://img.shields.io/david/JFK344/iobroker.esvewifi.svg)](https://david-dm.org/JFK344/iobroker.esvewifi)
 [![Known Vulnerabilities](https://snyk.io/test/github/JFK344/ioBroker.esvewifi/badge.svg)](https://snyk.io/test/github/JFK344/ioBroker.esvewifi)
 
-[![NPM](https://nodei.co/npm/iobroker.esvewifi.png?downloads=true)](https://nodei.co/npm/iobroker.esvewifi/)
+[![NPM](https://nodei.co/npm/iobroker.evsewifi.png?downloads=true)](https://nodei.co/npm/iobroker.esvewifi/)
 
 ## evSewifi adapter for ioBroker
 
-Transmitting data from an to the ESVE Wallbox.
+Transmitting data from an to the EVSE Wallbox.
 SimpleEVSE-WiFi: https://github.com/CurtRod/SimpleEVSE-WiFi
 
 ## Important Information:
@@ -45,6 +45,18 @@ currentP3 | actual current in A (phase 3)
 useMeter | energy meter is configured in EVSE-WiFi (true/false)
 
 ## Changelog
+
+### 1.0.4
+* (git-kick) Catch JSON parse exception in getLog()
+
+### 1.0.3
+* (git-kick) Added interruptCp()
+* (git-kick) Fixed getLog()
+
+### 1.0.2
+
+### 1.0.1
+
 ### 1.0.0
 * (JFK344) First release
 
