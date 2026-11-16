@@ -444,7 +444,8 @@ class Evsewifi extends utils.Adapter {
               } catch (e) {
                   self.log.warn(`Failed to parse JSON '${result}'`)
               }
-              const l = logObj ? Object.keys(logObj.list).length : 0;
+              const list = logObj?.list;
+              const l = (list && typeof list === 'object') ? Object.keys(list).length : 0;
               for(let c=0; c < l && c < self.config.noLogsToShow; c++){
                 const cString = (c).pad(String(self.config.noLogsToShow-1).length);
                 for(const a of logAttributes) {
