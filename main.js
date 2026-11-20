@@ -433,29 +433,32 @@ class Evsewifi extends utils.Adapter {
     }
   
     async getLog(){
-      var logsFolderName = 'logs.'
-      const url = 'http://' + this.config.ip + '/getLog';
+      const url = `http://${this.config.ip}/getLog`;
       const self = this;
       if (this.config.noLogsToShow != 0){
         request({method: "GET", url}, function (error, response, result) {
-            if(!error && response.statusCode == 200){
-              try {
-                  var logObj = JSON.parse(result)
-              } catch (e) {
-                  self.log.warn(`Failed to parse JSON '${result}'`)
-              }
-              const list = logObj?.list;
-              const l = (list && typeof list === 'object') ? Object.keys(list).length : 0;
-              for(let c=0; c < l && c < self.config.noLogsToShow; c++){
-                const cString = (c).pad(String(self.config.noLogsToShow-1).length);
-                for(const a of logAttributes) {
-                  self.setState(logsFolderName+'log_'+cString+'.'+a, logObj.list[l-1-c][a], true); // latest entry first
+            if(!error && response.statusCode == 200) {
+                if( result ) {
+                    self.log.debug(`getLog returned: '${result}'`)
+                    try {
+                        var logObj = JSON.parse(result)
+                    } catch (e) {
+                        self.log.warn(`Failed to parse JSON '${result}'`)
+                    }
+                } else {
+                    self.log.debug('getLog returned <empty string>')
                 }
-              }
-              self.log.debug('getLog returned: ' + result)
+                const list = logObj?.list;
+                const l = (list && typeof list === 'object') ? Object.keys(list).length : 0;
+                for(let c=0; c < l && c < self.config.noLogsToShow; c++) {
+                    const cString = c.pad(String(self.config.noLogsToShow-1).length);
+                    for(const a of logAttributes) {
+                        self.setState(`logs.log_${cString}.${a}`, logObj.list[l-1-c][a], true); // latest entry first
+                    }
+                }
             } else {
-              self.log.error("Check IP!")
-              //self.stop();
+                self.log.error("Check IP!")
+                //self.stop();
             }
         })
       }
